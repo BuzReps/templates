@@ -1,0 +1,35 @@
+{
+	"version": 3,
+	"configurePresets": [
+		{
+			"name": "common",
+			"toolchainFile": "./vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"binaryDir": "${sourceDir}/build_${presetName}",
+			"installDir": "${sourceDir}/install_${presetName}",
+			"hidden": true,
+			"cacheVariables": {
+				"VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
+				"VCPKG_HOST_TRIPLET": "x64-linux-dynamic",
+				"VCPKG_TARGET_TRIPLET": "x64-linux-dynamic"
+			},
+			"environment": {
+				"CC": "gcc",
+				"CXX": "g++"
+			}
+		},
+		{
+			"name": "debug",
+			"inherits": "common",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "debug",
+			"configurePreset": "debug",
+			"jobs": 4
+		}
+	]
+}

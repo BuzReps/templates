@@ -1,0 +1,113 @@
+# Config for clang-tidy 19
+# See https://clang.llvm.org/extra/clang-tidy/checks/list.html
+# And https://clang.llvm.org/extra/clang-tidy/
+# And https://clang.llvm.org/docs/analyzer/checkers.html
+
+# Skipped checks:
+# abseli-*      - A set of tools from Google
+# android-*
+# boost-*
+# darwin-*      - Apple OS
+# fuchsia-*     - OS from google
+# linuxkernel-*
+# llvm-*
+# llvmlibc-*
+# openmp-*
+# google-*
+
+# TODO checks
+# clang-analyzer-*
+# clang-analyzer-cplusplus*
+
+# Notes:
+# bugprone-exception-escape can be expensive
+# bugprone-unchecked-optional-access can be expensive
+# modernize-loop-convert fixes may change code semantics
+
+# Disabled checks:
+# bugprone-easily-swappable-parameters    - its impossible to avoid simple functions like `void Foo(int a, int b);`
+# cppcoreguidelines-pro-type-union-access - triggers on trivial cases like `glm::vec3 vec; vec.y = 3;`
+# cppcoreguidelines-pro-bounds-array-to-pointer-decay - cannot change OpenGL API, so std::span is not an option
+# readability-redundant-access-specifiers - access specifies allows to group members into logical blocks
+# readability-identifier-naming                   - 50 params. per-project configuration required
+# readability-braces-around-statements            -
+# hicpp-multiway-paths-covered            - Noisy and useless?
+# hicpp-uppercase-literal-suffix          - Noisy unconfigurable duplicate of readability-uppercase-literal-suffix
+# hicpp-signed-bitwise                    - ints are too common, e.g. `void OnGLFWKeyPressed(..., int mods) {if (mods & ...) {...}}`
+# hicpp-no-array-decay
+
+Checks:
+  bugprone-*,
+    -bugprone-easily-swappable-parameters,
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+    -cppcoreguidelines-pro-type-union-access,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  modernize-*,
+  readability-*,
+    -readability-redundant-access-specifiers,
+    -readability-identifier-length,
+    -readability-braces-around-statements,
+  portability-*,
+  performance-*,
+  cert-*,
+  hicpp-*,
+    -hicpp-multiway-paths-covered,
+    -hicpp-uppercase-literal-suffix,
+    -hicpp-no-array-decay,
+    -hicpp-signed-bitwise,
+  google-build-namespaces,
+  google-default-arguments,
+  google-explicit-constructor,
+  google-global-names-in-headers,
+  google-readability-avoid-underscore-in-googletest-name,
+  google-upgrade-googletest-case,
+  google-readability-casting,
+  google-runtime-int,
+  google-runtime-operator,
+  misc-*
+
+CheckOptions:
+  - key:   bugprone-argument-comment.CommentNullPtrs
+    value: true
+    # May cause false positive warnings for function calls e.g. for `assert(std::pow(2,2) == 4);`
+  - key:   bugprone-assert-side-effect.CheckFunctionCalls
+    value: true
+  - key:   bugprone-misplaced-widening-cast.CheckImplicitCasts
+    value: true
+  - key:   bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression
+    value: true
+  - key:   bugprone-string-constructor.StringNames
+    value: '::std::basic_string;llvm::StringRef;QString'
+  - key:   bugprone-suspicious-enum-usage.StrictMode
+    value: true
+  - key:   bugprone-suspicious-string-compare.WarnOnLogicalNotComparison
+    value: true
+  - key:   bugprone-unhandled-self-assignment.WarnOnlyIfThisHasSuspiciousField
+    value: false
+  - key:   cppcoreguidelines-avoid-do-while.IgnoreMacros
+    value: true
+  - key:   cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+  - key:   readability-implicit-bool-conversion.AllowIntegerConditions
+    value: true
+  - key:   readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key:   readability-inconsistent-declaration-parameter-name.Strict
+    value: true
+    # If pointer type is changed to raw pointer, `p.reset();` will not introduce memory leak like `p = nullptr;`
+  - key:   readability-uniqueptr-delete-release.PreferResetCall
+    value: true
+    # 'l' is the only ambigous character (e.g. `auto val = 123ll;`)
+    # Other literals e.g. `123ul,123ull,123.0f` are kept lowercase
+  - key:   readability-uppercase-literal-suffix.NewSuffixes
+    value: 'L;LL'
+  - key:   performance-for-range-copy.WarnOnAllAutoCopies
+    value: true
+  - key:   misc-const-correctness.WarnPointersAsValues
+    value: true
+  - key:   misc-const-correctness.TransformPointersAsValues
+    value: true
+  # TODO readability-identifier-naming params
