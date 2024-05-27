@@ -1,0 +1,747 @@
+---
+# This config includes options from clang-format <19>
+#
+# See full list of options here:
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+#
+# On new clang-format release: follow link above, find all new options with
+# Ctrl+F "clang-format <NEW_VERSION>", add options here and fix <version> above
+
+# All options have `@Confidence` levels, optional motivation `@Why` and optional
+# `@Alternative` suggestions
+#
+# Confidence levels describe how I am confident in a given style choice
+# High   - This option has a uniform style across all projects,
+#          the choice is obvious and non-negotiable
+# Medium - Style option may vary from project to project and is debatable
+# Low    - This choice is experimental
+#
+# Some options have `@Check` attribute
+# that describes dependencies on other options
+#
+# Some options marked as `@Deprecated`
+#
+# Some options are commented out and marked with `@Unused` attribute due
+# to various reasons
+
+# Useful script to apply clang-format to all .h and .cpp in src/ and subdirs
+#
+# #!/bin/bash
+#
+# find src/ -type f \( -name "*.cpp" -o -name "*.h" \) | while read line; do
+#     clang-format -i --verbose $line
+# done
+
+Language: Cpp
+
+# class Foo {
+# |--| - Access modifier keyword indent relative to class block
+# |  |private:
+#     void foo();
+# };
+#
+# @Confidence: High
+# @Why: Easier to visually separate class public interface from private impl.
+#       Value equal to default block offset makes then indistinguishable and
+#       values non divisible by block offset(i.e. powers of 2) are ugly
+# @Check: Value should be equal to negative of default block offset
+AccessModifierOffset: -2
+
+# someLongFunction(argument1,
+#                  argument2);
+# |---------------| - Argument alignment
+#
+# @Confidence: High
+# Why: Its prettier when all args under each other,
+#      easier to visually find arguments,
+#      easier to write boolean expressions
+AlignAfterOpenBracket: Align
+
+# struct test demo[] =
+# {
+#     {56,    23, "hello"},
+#     {-1, 93463, "world"},
+#     { 7,     5,    "!!"}
+# };           |
+#              | columns are aligned to the right
+#
+# @Confidence: High
+# @Why: Right alignment makes easier to compare numeric literals and looks
+#       better with signed/unsigned literals
+AlignArrayOfStructures: Right
+
+# Macros, bit fields, declarations and assignments alignment
+#
+# #define SHORT_NAME       42
+# #define LONGER_NAME      0x007f
+# #define EVEN_LONGER_NAME (2)
+# #define foo(x)           (x * x)
+# #define bar(y, z)        (y + z)
+#
+# int a            = 1;
+# int somelongname = 2;
+# double c         = 3;
+#
+# int aaaa : 1;
+# int b    : 12;
+# int ccc  : 8;
+#
+# int         aaaa = 12;
+# float       b = 23;
+# std::string ccc;
+
+
+# @Confidence: Medium
+# @Why: Counterexample:
+# ts          = luaX_newstring(ls,
+#                     luaZ_buffer(ls->buff),
+#                     luaZ_bufflen(ls->buff));
+# seminfo->ts = ts;
+AlignConsecutiveAssignments:
+  Enabled:          false
+  AcrossEmptyLines: false
+  AcrossComments:   true
+  AlignCompound:    true
+  PadOperators:     true
+
+# @Confidence: High
+AlignConsecutiveBitFields:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   true
+
+# @Confidence: Medium
+# @Why: See `AlignConsecutiveAssignments`
+AlignConsecutiveDeclarations:
+  Enabled:               false
+  AcrossEmptyLines:      false
+  AcrossComments:        false
+  # @Check: clang-format >= 17
+  # AlignFunctionPointers: false
+
+# @Confidence: High
+AlignConsecutiveMacros:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   true
+
+# switch (level) {
+# case log::info:    return "info";
+# case log::warning: return "warning";
+# default:           return "";
+# }
+#
+# @Confidence: Medium
+# @Check: Only applies if `AllowShortCaseLabelsOnASingleLine` is true
+AlignConsecutiveShortCaseStatements:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   true
+  AlignCaseColons:  false
+
+# @Unused: not interested in TableGen options
+# AlignConsecutiveTableGenCondOperatorColons
+# AlignConsecutiveTableGenDefinitionColons
+#
+
+# #define A                                                  \
+#   int aaaa;                                                \
+#   int b;                                                   \
+#   int dddddddddd;
+#                  |--------------- alignment ---------------|
+#
+# @Confidence: Medium
+# @Alternative: Left
+# @Why: Macro body looks cleaner. Drawbacks: missed '\' may lead to confusion
+AlignEscapedNewlines: Right
+
+# Operands alignment
+#
+# int aaa = bbbbbbbbbbbbbbb             int aaa = bbbbbbbbbbbbbbb
+#         + ccccccccccccccc;                      + ccccccccccccccc;
+#                                vs
+# auto val = cond1 ? val1               auto val = cond1 ? val1
+#          : cond2 ? val2                          : cond2 ? val2
+#          : cond3 ? val3                          : cond3 ? val3
+#          : val4;                                 : val4;
+#
+# @Confidence: High
+# @Why: Assignment oprator visually splits expression into left and right parts
+AlignOperands: Align
+
+# int a;  // these are
+# int ab; // aligned
+#
+# int abcdef; // but this isn't
+#
+# @Confidence: High
+AlignTrailingComments:
+  Kind:           Always
+  OverEmptyLines: 0
+
+# true:
+# callFunction(
+#     obj->window->handle, params.parent.handle, info->window.colorspace);
+#
+# false:
+# callFunction(obj->window->handle,
+#              params.parent.handle,
+#              info->window.colorspace);
+#
+# @Confidence: High
+# @Why: It may look ugly with short args,
+#       but they probably will fit on a single line
+AllowAllArgumentsOnNextLine: false
+
+# @Deprecated: See `NextLine` of `PackConstructorInitializers`
+# AllowAllConstructorInitializersOnNextLine:
+
+# Same as `AllowAllArgumentsOnNextLine`, but for function declarations args
+# @Confidence: High
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# void Method(Engine & engine, Actor & a)
+#   noexcept(std::is_same_v<T, B>);
+#
+#            vs
+#
+# void Method(Engine & engine, Actor & a) noexcept(std::is_same_v<T, B>);
+#
+# @Confidence: High
+# @Why: Conditional `noexcept` will exceed 80 lines anyways,
+#       also separate declaration and logic are easier to read on separate lines
+# @Why: TODO enable for clang-format 18
+# AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
+
+# @Confidence: High
+AllowShortBlocksOnASingleLine: Never
+
+# @Confidence: High
+# @Why: Its a bad idea to leave multiple statements on a single line
+AllowShortCaseLabelsOnASingleLine: false
+
+# true:
+# template <typename T>
+# concept c = requires(T x) {
+#   { x + 1 } -> std::same_as<int>;
+# };
+#
+# false:
+# template <typename T>
+# concept c = requires(T x) {
+#   {
+#     x + 1
+#   } -> std::same_as<int>;
+# };
+#
+# @Confidence: High
+# @Why: TODO enable for clang-format 18
+# AllowShortCompoundRequirementOnASingleLine: true
+
+# @Confidence: High
+AllowShortEnumsOnASingleLine: false
+
+# @Confidence: High
+# @Why: Empty because interfaces with default empty implementations
+AllowShortFunctionsOnASingleLine: Empty
+
+# @Confidence: High
+AllowShortIfStatementsOnASingleLine: Never
+
+# @Confidence: High
+AllowShortLambdasOnASingleLine: None
+
+# @Confidence: High
+AllowShortLoopsOnASingleLine: false
+
+# @Deprecated
+# AlwaysBreakAfterDefinitionReturnType:
+
+# @Deprecated: Renamed to `BreakAfterReturnType`
+# AlwaysBreakAfterReturnType:
+
+# @Confidence: High
+AlwaysBreakBeforeMultilineStrings: false
+
+# @Deprecated: Renamed to `BreakTemplateDeclarations`
+# @Confidence: High
+# @Check: For clang-format >=19 disable this and enable `BreakTemplateDeclarations`
+AlwaysBreakTemplateDeclarations: true
+
+# @Why: Unused for now
+# AttributeMacros:
+
+# A function call’s arguments will either be all on the same line
+# or will have one line each.
+#
+# @Confidence: High
+BinPackArguments: false
+
+# @Confidence: High
+BinPackParameters: false
+
+# @Confidence: High
+BitFieldColonSpacing: Both
+
+# @Confidence: High
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel        : false
+  AfterClass            : false
+  AfterControlStatement : Never
+  AfterEnum             : false
+  AfterFunction         : false
+  AfterNamespace        : false
+  # @Why: not interested in Obj-C
+  # AfterObjCDeclaration
+  AfterStruct           : false
+  AfterUnion            : false
+  AfterExternBlock      : false
+  BeforeCatch           : true
+  BeforeElse            : true
+  BeforeLambdaBody      : false
+  BeforeWhile           : true
+  # for (...)
+  #   {
+  IndentBraces          : false
+  SplitEmptyFunction    : true
+  SplitEmptyRecord      : false
+  SplitEmptyNamespace   : true
+
+# SomeClass c{
+#     "foo",
+#     "bar",
+#     "baz",
+# |--| <-- indent
+# };
+#
+# @Confidence: High
+# @Check: If unset, `ContinuationIndentWidth` is used.
+BracedInitializerIndentWidth: 2
+
+# true:
+# return "Code"
+#        "\0\52\26\55\55\0"
+#        "x013"
+#        "\02\xBA";
+# false:
+# return "Code" "\0\52\26\55\55\0" "x013" "\02\xBA";
+#
+# @Confidence: High
+# @Why: TODO enable for clang-format 18
+# BreakAdjacentStringLiterals: true
+
+# @Confidence: High
+BreakAfterAttributes: Always
+
+# @Why: Not interested in Java
+# BreakAfterJavaFieldAnnotations:
+
+# @Confidence: High
+# @Why: TODO enable for clang-format 19
+# BreakAfterReturnType: Automatic
+
+# @Why: Not interested in JSON
+# BreakArrays:
+
+# LooooooooooongType loooooooooooooooooooooongVariable =
+#     someLooooooooooooooooongFunction();
+#
+# bool value = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#                      + aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#                  == aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#              && aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#                     > ccccccccccccccccccccccccccccccccccccccccc;
+#
+# @Confidence: High
+# @Why: Its easier to read when operators come before second operand
+BreakBeforeBinaryOperators: NonAssignment
+
+# @Confidence: High
+BreakBeforeConceptDeclarations: Always
+
+# @Confidence: Low
+BreakBeforeInlineASMColon: OnlyMultiline
+
+# @Confidence: High
+BreakBeforeTernaryOperators: false
+
+# Constructor()                   Constructor() :
+#     : initializer1()     vs         initializer1(),
+#     , initializer2()                initializer2()
+# @Confidence: High
+BreakConstructorInitializers: BeforeComma
+
+# @Confidence: Medium
+# @Alternative: BeforeComma to match ctor format or
+#               AfterComma for cool aligned list
+BreakInheritanceList: AfterComma
+
+# @Confidence: High
+# @Why: clang-format can make ugly split. Better do it manually
+BreakStringLiterals: false
+
+# @Confidence: Medium
+# @Check: TODO enable for clang-format 19
+# BreakTemplateDeclarations: Yes
+
+# @Confidence: High
+# @Why: Can fit 2 files on a vertical monitor, 3 on a horizontal.
+ColumnLimit: 80
+
+# @Why: Unused for now
+# CommentPragmas:
+
+# @Confidence: High
+CompactNamespaces: false
+
+# @Deprecated: See `CurrentLine` of `PackConstructorInitializers`
+# ConstructorInitializerAllOnOneLineOrOnePerLine:
+
+# @Confidence: High
+ConstructorInitializerIndentWidth: 2
+
+# Indentation of a line that does not fits. Do not confuse with block indent
+# @Confidence: High
+# @Check: Probably equal to IndentWidth?
+ContinuationIndentWidth: 2
+
+# Braces in brace initialization work like parenthesis in function/ctor call
+# @Confidence: High
+Cpp11BracedListStyle: true
+
+# @Deprecated: See `DeriveLF` and `DeriveCRLF` of `LineEnding`
+# DeriveLineEnding:
+
+# @Confidence: High
+# @Why: See `PointerAlignment`
+DerivePointerAlignment: false
+
+# @Confidence: High
+DisableFormat: false
+
+# @Confidence: High
+EmptyLineAfterAccessModifier: Never
+
+# @Confidence: High
+EmptyLineBeforeAccessModifier: Always
+
+# @Why: Useless
+# ExperimentalAutoDetectBinPacking: false
+
+# @Confidence: High
+FixNamespaceComments: true
+
+# @Why: Unused for now
+# ForEachMacros:
+# IfMacros
+
+# @Confidence: High
+# @Why: If include order is relevant, use "clang-format off"
+IncludeBlocks: Regroup
+
+# @Confidence: Medium
+# @Why: Taken from generated google style
+IncludeCategories:
+  - Regex:           '^<ext/.*\.h>'
+    Priority:        2
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '^<.*\.h>'
+    Priority:        1
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '^<.*'
+    Priority:        2
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '.*'
+    Priority:        3
+    SortPriority:    0
+    CaseSensitive:   false
+
+# @Confidence: Medium
+# @Why: Taken from generated google style
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+
+# @Confidence: Medium
+# @Why: Taken from example
+IncludeIsMainSourceRegex: '(Impl\.hpp)$'
+
+# @Confidence: High
+# @Why: See `AccessModifierOffset`
+IndentAccessModifiers: false
+
+# @Confidence: High
+IndentCaseBlocks: false
+
+# @Confidence: High
+IndentCaseLabels: true
+
+# @Confidence: High
+# @Why: Block is block and should be indented
+IndentExternBlock: Indent
+
+# @Confidence: High
+# @Why easier to visually detect label scope
+IndentGotoLabels: true
+
+# @Confidence: Medium: TODO test `AfterHash` alternative
+IndentPPDirectives: None
+
+# @Confidence: Medium
+IndentRequiresClause: false
+
+# @Confidence: Medium
+# @Alternative: 2/4/8
+IndentWidth: 2
+
+# @Confidence: High
+IndentWrappedFunctionNames: false
+
+# @Confidence: High
+# @Why: Faster to edit/add lines. Git diffs are cleaner
+InsertBraces: true
+
+# @Confidence: High
+# @Why: Further shell output after `cat source.cpp` will not mix with last line
+InsertNewlineAtEOF: true
+
+# @Confidence: High
+# @Why: Git diffs are cleaner
+# @Why: Conflicts with `BinPackArguments`. Works only for JS
+# InsertTrailingCommas: Wrapped
+
+# @Confidence: High
+# @Why: Each case may have its own separator rules
+IntegerLiteralSeparator:
+  Binary : 0
+  Decimal: 0
+  Hex    : 0
+
+# @Why: Not interested in Java
+# JavaImportGroups
+# JavaScriptQuotes
+# JavaScriptWrapImports
+
+# @Confidence: High: TODO test for collisions with `InsertNewlineAtEOF`
+KeepEmptyLinesAtEOF: false
+
+# @Confidence: High
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# @Confidence: High
+LambdaBodyIndentation: Signature
+
+# @Confidence: High
+LineEnding: LF
+
+# @Why: Unused for now
+# MacroBlockBegin: ''
+
+# @Why: Unused for now
+# MacroBlockEnd:   ''
+
+# @Why: Unused for now
+# Macros:
+
+# @Why: Unused for now
+# MainIncludeChar
+
+# @Confidence: High
+MaxEmptyLinesToKeep: 1
+
+# @Confidence: High
+# @Why: Its very wasteful to take up space from a 80 column line
+#       just for a namespace indent
+NamespaceIndentation: None
+
+# @Why: Unused for now
+# NamespaceMacros:
+
+# @Why: not interested in Obj-C
+# ObjCBinPackProtocolList
+# ObjCBlockIndentWidth
+# ObjCBreakBeforeNestedBlockParam
+# ObjCPropertyAttributeOrder
+# ObjCSpaceAfterProperty
+# ObjCSpaceBeforeProtocolList
+
+# @Confidence: Medium
+# @Alternative: -1/0
+PPIndentWidth: -1
+
+# @Confidence: High
+# @Why: Each ctor initializer is an assignment statement and deserves
+#       to be on a separate line
+PackConstructorInitializers: Never
+
+# The bigger the value => the less chance that line will be split here
+# @Confidence: Medium: requires testing
+# @Why: Its better to split like this:
+#       var = thisisaverylongfunction(arg1,
+#                                     funccall1(ls->buff),
+#                                     funccall2(ls->buff));
+#       Rather than this:
+#       var
+#         = thisisaverylongfunction(arg1, funccall1(ls->buff), ...);
+PenaltyBreakAssignment: 100
+PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakOpenParenthesis: 0
+# @Check: clang-format >17
+# PenaltyBreakScopeResolution: 1000
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyIndentedWhitespace: 0
+PenaltyReturnTypeOnItsOwnLine: 200
+
+# @Confidence: High
+# @Why: Pointer is a part of the data type
+PointerAlignment: Middle
+
+# @Confidence: High
+QualifierAlignment: Custom
+QualifierOrder:
+  - static
+  - constexpr
+  - inline
+  - friend
+  - volatile
+  - restrict
+  - const
+  - type
+
+# @Why: Unused for now
+# RawStringFormats:
+
+# @Confidence: High
+ReferenceAlignment: Pointer
+
+# @Confidence: High
+# @Why: Automated formatting may spoil comments
+ReflowComments: false
+
+# @Confidence: High
+# @Why: Non deterministic behaviour. May break code
+RemoveBracesLLVM: false
+
+# @Confidence: High
+# @Why: Non deterministic behaviour. May break code
+RemoveParentheses: Leave
+
+# @Confidence: Medium
+# @Why: Non deterministic behaviour. May break code
+RemoveSemicolon: false
+
+# @Confidence: High
+RequiresClausePosition: OwnLine
+
+# @Confidence: High
+RequiresExpressionIndentation: Keyword
+
+# @Confidence: High
+SeparateDefinitionBlocks: Always
+
+# @Confidence: Medium
+ShortNamespaceLines: 0
+
+# @Confidence: Medium
+# @Check: TODO enable for clang-format >=18
+# SkipMacroDefinitionBody: false
+
+# @Confidence: Medium
+SortIncludes: CaseSensitive
+
+# @Why: Not interested in Java
+# SortJavaStaticImport:
+
+# @Confidence: Medium
+SortUsingDeclarations: LexicographicNumeric
+
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+# @Why: Utilizing brackets like parenthesis in a function/ctor call
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+# @Why: Not interested in JSON
+# SpaceBeforeJsonColon: false
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements: true
+  AfterForeachMacros          : true
+  AfterFunctionDeclarationName: false
+  AfterFunctionDefinitionName : false
+  AfterIfMacros               : true
+  AfterOverloadedOperator     : false
+  # @Confidence: Medium
+  # @Check: TODO enable for clang-format >=19
+  # AfterPlacementOperator      : true
+  AfterRequiresInClause       : false
+  AfterRequiresInExpression   : false
+  BeforeNonEmptyParentheses   : false
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+# @Deprecated: See `InEmptyParentheses` of `SpacesInParensOptions`
+# SpaceInEmptyParentheses: false
+# @Confidence: Medium
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: Never
+# @Deprecated: See `InCStyleCasts` of `SpacesInParensOptions`
+# SpacesInCStyleCastParentheses: false
+# @Deprecated: See `InConditionalStatements` of `SpacesInParensOptions`
+# SpacesInConditionalStatement: false
+SpacesInContainerLiterals: false
+# @Why: Automated formatting may spoil comments
+# @Check: Has only effect if `ReflowComments` is set to `true`
+SpacesInLineCommentPrefix:
+  Minimum:  0
+  Maximum: -1
+SpacesInParens: Never
+# SpacesInParensOptions
+# @Deprecated
+# SpacesInParentheses
+SpacesInSquareBrackets: false
+
+# @Confidence: High
+Standard: Auto
+
+# @Confidence: High
+StatementAttributeLikeMacros:
+  - Q_EMIT
+
+# @Confidence: High
+StatementMacros:
+  - Q_UNUSED
+  - QT_REQUIRE_VERSION
+
+# @Confidence: Medium
+TabWidth: 4
+
+# @Why: Unused for now
+# TypeNames:
+
+# @Why: Unused for now
+# TypenameMacros:
+
+# @Deprecated: See `LineEnding`
+# UseCRLF
+
+# @Confidence: High
+UseTab: Never
+
+# @Why: Not interested in Verilog
+# VerilogBreakBetweenInstancePorts
+
+# @Why: Unused for now
+# WhitespaceSensitiveMacros:
+...
+
