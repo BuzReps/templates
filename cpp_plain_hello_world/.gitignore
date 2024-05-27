@@ -1,0 +1,9 @@
+# Clangd cache
+.cache
+
+# Compilation database (used by clangd)
+compile_commands.json
+
+# Build files
+build
+

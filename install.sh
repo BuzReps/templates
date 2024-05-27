@@ -7,11 +7,19 @@
 # 2. [Optional] Provide custom installation logic in case statement at the end of the file
 
 # User menu entries
-templates_menu_entries=("C++ Hello world")
+templates_menu_entries=(
+	"[C++] Hello world"
+	"[C++] [vcpkg] Hello world"
+	"[C++] [vcpkg] [GLFW] Hello triangle"
+)
 
 # Templates directory in repository. Used for simple copying
 # Indices should match entries in user menu
-templates_dirnames=("cpp_hello_world")
+templates_dirnames=(
+	"cpp_plain_hello_world"
+	"cpp_vcpkg_hello_world"
+	"cpp_vcpkg_opengl_hello_triangle"
+)
 
 # Set templates directory path in ${templates_dir}
 function get_templates_dir() {
